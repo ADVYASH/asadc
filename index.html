@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Minecraft SMP Whitelist Quiz with Discord Login</title>
+</head>
+<body>
+
+<h1>Minecraft SMP (ASRP2) – Whitelist Quiz</h1>
+
+<!-- Discord Login Button -->
+<button id="discord-login">Login with Discord</button>
+
+<!-- Quiz section, hidden by default -->
+<div id="quiz-container" style="display:none;">
+  <h2>Quiz</h2>
+  <form id="quiz-form">
+    <div>
+      <p>1. What is the main goal of the server?</p>
+      <input type="text" id="q1" required />
+    </div>
+    <div>
+      <p>2. How do you join the server?</p>
+      <input type="text" id="q2" required />
+    </div>
+    <!-- Add more questions as needed -->
+    <button type="submit">Submit Quiz</button>
+  </form>
+</div>
+
+<div id="result"></div>
+
+<script>
+  const clientId = 'YOUR_DISCORD_CLIENT_ID'; // Replace with your Discord app client ID
+  const redirectUri = 'http://localhost:8000'; // Your redirect URL (must match Discord app settings)
+  const scope = 'identify';
+
+  let userData = {}; // To store logged-in user info
+
+  document.getElementById('discord-login').onclick = () => {
+    const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${scope}`;
+    window.location.href = authUrl;
+  };
+
+  // After redirect, handle auth code
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
+
+  if (code) {
+    // Send code to server to get user info
+    fetch('/auth', { // Your server endpoint
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.allowed) {
+        userData = data.userData;
+        document.getElementById('quiz-container').style.display = 'block';
+        document.getElementById('discord-login').style.display = 'none';
+      } else {
+        alert('You are not authorized to access this quiz.');
+      }
+    });
+  }
+
+  // Handle quiz submission
+  document.getElementById('quiz-form').onsubmit = (e) => {
+    e.preventDefault();
+    const answers = {
+      q1: document.getElementById('q1').value,
+      q2: document.getElementById('q2').value,
+    };
+    // Simple scoring example
+    let score = 0;
+    if (answers.q1.toLowerCase().includes('goal')) score++;
+    if (answers.q2.toLowerCase().includes('join')) score++;
+
+    // Send answers and score to server
+    fetch('/submit-quiz', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: userData.id,
+        userName: userData.username,
+        answers: answers,
+        score: score,
+      }),
+    }).then(res => res.json())
+      .then(data => {
+        document.getElementById('result').innerText = 'Quiz submitted! Your score: ' + score;
+      });
+  };
+</script>
+
+</body>
+</html>
