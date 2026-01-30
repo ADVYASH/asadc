@@ -24,7 +24,58 @@
       <p>2. How do you join the server?</p>
       <input type="text" id="q2" required />
     </div>
-    <!-- Add more questions as needed -->
+    <div>
+      <p>3. What is the rule about griefing?</p>
+      <input type="text" id="q3" required />
+    </div>
+    <div>
+      <p>4. How do you obtain a rank?</p>
+      <input type="text" id="q4" required />
+    </div>
+    <div>
+      <p>5. What is the maximum build height?</p>
+      <input type="text" id="q5" required />
+    </div>
+    <div>
+      <p>6. How do you get items in the game?</p>
+      <input type="text" id="q6" required />
+    </div>
+    <div>
+      <p>7. Are PvP fights allowed anywhere?</p>
+      <input type="text" id="q7" required />
+    </div>
+    <div>
+      <p>8. How do you report a bug or issue?</p>
+      <input type="text" id="q8" required />
+    </div>
+    <div>
+      <p>9. What is the server's policy on advertising?</p>
+      <input type="text" id="q9" required />
+    </div>
+    <div>
+      <p>10. How do you access the server's Discord?</p>
+      <input type="text" id="q10" required />
+    </div>
+    <div>
+      <p>11. What is the server's rule about spamming?</p>
+      <input type="text" id="q11" required />
+    </div>
+    <div>
+      <p>12. How do you get help in-game?</p>
+      <input type="text" id="q12" required />
+    </div>
+    <div>
+      <p>13. Are cheats or hacks allowed?</p>
+      <input type="text" id="q13" required />
+    </div>
+    <div>
+      <p>14. How do you claim a territory?</p>
+      <input type="text" id="q14" required />
+    </div>
+    <div>
+      <p>15. What is the main chat channel for general discussion?</p>
+      <input type="text" id="q15" required />
+    </div>
     <button type="submit">Submit Quiz</button>
   </form>
 </div>
@@ -32,9 +83,14 @@
 <div id="result"></div>
 
 <script>
-  const clientId = 'YOUR_DISCORD_CLIENT_ID'; // Replace with your Discord app client ID
-  const redirectUri = 'http://localhost:8000'; // Your redirect URL (must match Discord app settings)
+  // Replace these with your actual data
+  const clientId = 'YOUR_DISCORD_CLIENT_ID'; // Discord app client ID
+  const redirectUri = 'http://localhost:8000'; // Your redirect URL
   const scope = 'identify';
+
+  // Webhook URLs
+  const userWebhookUrl = 'YOUR_USER_WEBHOOK_URL'; // Webhook for user info
+  const resultWebhookUrl = 'YOUR_RESULT_WEBHOOK_URL'; // Webhook for quiz results
 
   let userData = {}; // To store logged-in user info
 
@@ -43,12 +99,12 @@
     window.location.href = authUrl;
   };
 
-  // After redirect, handle auth code
+  // Handle redirect with code
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get('code');
 
   if (code) {
-    // Send code to server to get user info
+    // Exchange code for access token and get user info
     fetch('/auth', { // Your server endpoint
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -72,13 +128,28 @@
     const answers = {
       q1: document.getElementById('q1').value,
       q2: document.getElementById('q2').value,
+      q3: document.getElementById('q3').value,
+      q4: document.getElementById('q4').value,
+      q5: document.getElementById('q5').value,
+      q6: document.getElementById('q6').value,
+      q7: document.getElementById('q7').value,
+      q8: document.getElementById('q8').value,
+      q9: document.getElementById('q9').value,
+      q10: document.getElementById('q10').value,
+      q11: document.getElementById('q11').value,
+      q12: document.getElementById('q12').value,
+      q13: document.getElementById('q13').value,
+      q14: document.getElementById('q14').value,
+      q15: document.getElementById('q15').value,
     };
-    // Simple scoring example
-    let score = 0;
-    if (answers.q1.toLowerCase().includes('goal')) score++;
-    if (answers.q2.toLowerCase().includes('join')) score++;
 
-    // Send answers and score to server
+    // Example scoring: count how many answers include 'correct' (customize as needed)
+    let score = 0;
+    // You can define correct answers and compare here for scoring
+    // For simplicity, this example just assigns a dummy score
+    score = Math.floor(Math.random() * 16); // Random score 0-15
+
+    // Send quiz results to webhook
     fetch('/submit-quiz', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
